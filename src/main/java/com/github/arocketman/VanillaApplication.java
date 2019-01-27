@@ -2,13 +2,19 @@ package com.github.arocketman;
 
 import com.github.arocketman.entities.Role;
 import com.github.arocketman.entities.User;
+import com.github.arocketman.repositories.UserRepository;
 import com.github.arocketman.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.util.Arrays;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -22,11 +28,19 @@ public class VanillaApplication {
             service.save(new User(
                     "user", //username
                     "user", //password
-Arrays.asList(new Role("USER"), new Role("ACTUATOR")),//roles 
+Arrays.asList(new Role("USER"), new Role("ACTUATOR")),//roles
                     true//Active
             ));
         };
     }
+
+    @Autowired
+    public void authenticationManager(AuthenticationManagerBuilder builder, UserRepository repo)throws Exception{
+        builder.userDetailsService(s -> new CustomerUserDetails(repo.findByUsername(s)));
+
+    }
+
+
     
     @Bean
     public PasswordEncoder getPasswordEncoder(){
